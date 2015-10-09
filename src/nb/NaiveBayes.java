@@ -3,6 +3,7 @@ package nb;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -11,6 +12,9 @@ public class NaiveBayes {
 	static ArrayList<ArrayList<Boolean>> trainData = new ArrayList<ArrayList<Boolean>>();
 	static ArrayList<ArrayList<Boolean>> testData = new ArrayList<ArrayList<Boolean>>();
 	static ArrayList<String> attributeNames = new ArrayList<String>();
+	static double[] condProbClass1 = new double[attributeNames.size()];
+	static double[] condProbClass2 = new double[attributeNames.size()];
+	static double probClass1 = 0, probClass2 = 0;
 	
 	public static void main(String[] args) throws IOException {
 		// Terminate program with error message if not 2 command line arguments
@@ -24,8 +28,6 @@ public class NaiveBayes {
 		//Store binary data in trainData:
 		parseTrainData(args[0]);
 		
-		double probClass1 = 0, probClass2 = 0;
-		
 		for (int i = 0; i < trainData.size(); i++) {
 			if (trainData.get(i).get(attributeNames.size())) {
 				probClass1++;
@@ -34,22 +36,69 @@ public class NaiveBayes {
 		probClass1 = probClass1 * 1.0 / trainData.size();
 		probClass2 = 1.0 - probClass1;
 		
-		double[] condProbClass1 = new double[attributeNames.size()];
-		double[] condProbClass2 = new double[attributeNames.size()];
-		
 		condProbClass1 = calculateConditionalProbabilities(true);
 		condProbClass2 = calculateConditionalProbabilities(false);
 		
-		
+		printClassifier();
 		
 	}
 	
 	public static double[] calculateConditionalProbabilities(boolean classValue) {
 		double[] condProbs = new double[attributeNames.size()];
+		double numMatch=0;
+		double numTrue=0;
 		
-		
-		
+		for (int k=0; k<attributeNames.size()-1; k++) {
+			
+			for (int i=0; i<trainData.size(); i++) {
+				
+				if(trainData.get(i).get(attributeNames.size())==classValue) {
+					numMatch++;
+					if (trainData.get(i).get(k))
+						numTrue++;
+				}
+			}
+			
+			condProbs[k] = (double)numTrue / numMatch;
+			numMatch = 0;
+			numTrue = 0;
+		}
+
 		return condProbs;
+	}
+	
+	//method to print classifier
+	public static void printClassifier() {
+		
+		DecimalFormat df = new DecimalFormat("0.00");
+		
+		System.out.print("P(C=c1)=" + df.format(probClass1) + " ");
+		for (int k=0; k<attributeNames.size(); k++) {
+			System.out.print("P(");
+			System.out.print(attributeNames.get(k));
+			System.out.print("=1|c1)=");
+			System.out.print(df.format(condProbClass1[k]) + " ");
+			
+			System.out.print("P(");
+			System.out.print(attributeNames.get(k));
+			System.out.print("=0|c1)=");
+			System.out.print(df.format(1-condProbClass1[k]) + " ");
+		}
+		System.out.println();
+		
+		System.out.print("P(C=c2)=" + df.format(probClass2) + " ");
+		for (int k=0; k<attributeNames.size(); k++) {
+			System.out.print("P(");
+			System.out.print(attributeNames.get(k));
+			System.out.print("=1|c2)=");
+			System.out.print(df.format(condProbClass2[k]) + " ");
+			
+			System.out.print("P(");
+			System.out.print(attributeNames.get(k));
+			System.out.print("=0|c2)=");
+			System.out.print(df.format(1-condProbClass2[k]) + " ");
+		}
+		
 	}
 	
 	//method to read training data file and store in two dimensional boolean arraylist
@@ -63,6 +112,11 @@ public class NaiveBayes {
 					attributeNames.add(name);
 					name = scan.next();
 				}
+				
+				//DEBUGGING:
+				System.out.println("The names are:");
+				System.out.println(attributeNames);
+				
 				//Now we have the number and names of attributes stored properly.
 				//Next we populate the data array.
 				
