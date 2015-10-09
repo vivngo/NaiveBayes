@@ -48,7 +48,7 @@ public class NaiveBayes {
 		double numMatch=0;
 		double numTrue=0;
 		
-		for (int k=0; k<attributeNames.size()-1; k++) {
+		for (int k=0; k<attributeNames.size(); k++) {
 			
 			for (int i=0; i<trainData.size(); i++) {
 				
@@ -112,11 +112,7 @@ public class NaiveBayes {
 					attributeNames.add(name);
 					name = scan.next();
 				}
-				
-				//DEBUGGING:
-				System.out.println("The names are:");
-				System.out.println(attributeNames);
-				
+
 				//Now we have the number and names of attributes stored properly.
 				//Next we populate the data array.
 				
