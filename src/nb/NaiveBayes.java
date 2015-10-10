@@ -25,8 +25,12 @@ public class NaiveBayes {
 		}
 		
 		//Store attribute names in attributeNames;
-		//Store binary data in trainData:
+		//Store binary data in trainData/testData:
 		parseTrainData(args[0]);
+		parseTestData(args[1]);
+//		for (int k=0;k<testData.size();k++) {
+//			System.out.println("instance " + k + ": " + testData.get(k));
+//		}
 		
 		for (int i = 0; i < trainData.size(); i++) {
 			if (trainData.get(i).get(attributeNames.size())) {
@@ -40,6 +44,13 @@ public class NaiveBayes {
 		condProbClass2 = calculateConditionalProbabilities(false);
 		
 		printClassifier();
+		
+		DecimalFormat dec = new DecimalFormat("0.0");
+		System.out.println("\n");
+		System.out.print("Accuracy on training set (" + trainData.size() + " instances): ");
+		System.out.println(dec.format(100*classifyAccuracy(trainData)) + "%");
+		System.out.print("Accuracy on test set (" + testData.size() + " instances): ");
+		System.out.println(dec.format(100*classifyAccuracy(testData)) + "%");
 		
 	}
 	
@@ -98,6 +109,56 @@ public class NaiveBayes {
 			System.out.print("=0|c2)=");
 			System.out.print(df.format(1-condProbClass2[k]) + " ");
 		}
+		
+	}
+	
+	public static double classifyAccuracy(ArrayList<ArrayList<Boolean>> set) {
+		double correct = 0;
+		double incorrect = 0;
+		double accuracy = 0;
+		boolean guess;
+		boolean right = false;
+		double probTrue = 0.0;
+		double probFalse = 0.0;
+		
+		for (int k=0; k<set.size(); k++) {
+			
+			probTrue = probClass1;
+			probFalse = probClass2;
+			right = set.get(k).get(attributeNames.size());
+			
+			for(int i=0; i<attributeNames.size(); i++) {
+				if (set.get(k).get(i)) {
+					probTrue *= condProbClass1[i];
+					probFalse *= condProbClass2[i];
+				}
+				else {
+					probTrue *= (1-condProbClass1[i]);
+					probFalse *= (1-condProbClass2[i]);
+				}
+			}
+			
+			//debug:
+			//System.out.println("Prob true is " + probTrue + ", prob false is " + probFalse);
+			
+			if (probTrue >= probFalse)
+				guess = true;
+			else
+				guess = false;
+			
+			if (guess == right)
+				correct++;
+			else
+				incorrect++;
+			
+		}
+		
+		//debug
+		System.out.println("num correct is " + correct + ", num incorrect is " + incorrect);
+		
+		accuracy = (double) correct / (correct + incorrect);
+		
+		return accuracy;
 		
 	}
 	
@@ -210,4 +271,6 @@ public class NaiveBayes {
 			scan.close();
 			//Now we have successfully created a two-dimensional boolean array with all of the data!!
 		}
+		
+		
 }
